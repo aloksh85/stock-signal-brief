@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stock Signal Brief - Autonomous Multi-Agent Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #0a0e17;
+      --bg-card: rgba(22, 31, 49, 0.7);
+      --bg-card-hover: rgba(30, 42, 66, 0.85);
+      --border-color: rgba(255, 255, 255, 0.1);
+      --accent-cyan: #00f2fe;
+      --accent-blue: #4facfe;
+      --accent-green: #00e676;
+      --accent-red: #ff5252;
+      --text-main: #f0f4f8;
+      --text-muted: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      background-image: 
+        radial-gradient(circle at 15% 15%, rgba(0, 242, 254, 0.08) 0%, transparent 40%),
+        radial-gradient(circle at 85% 85%, rgba(79, 172, 254, 0.08) 0%, transparent 40%);
+      color: var(--text-main);
+      min-height: 100vh;
+      padding: 24px;
+    }
+
+    .container {
+      max-width: 1280px;
+      margin: 0 auto;
+    }
+
+    /* Header */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 28px;
+      background: var(--bg-card);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      margin-bottom: 24px;
+    }
+
+    .logo-section {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo-icon {
+      font-size: 28px;
+      background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    h1 {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      background: rgba(0, 230, 118, 0.1);
+      border: 1px solid rgba(0, 230, 118, 0.3);
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--accent-green);
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      background-color: var(--accent-green);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--accent-green);
+    }
+
+    .btn-run {
+      background: linear-gradient(135deg, #00f2fe, #4facfe);
+      color: #040914;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 4px 14px rgba(0, 242, 254, 0.3);
+    }
+
+    .btn-run:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0, 242, 254, 0.4);
+    }
+
+    .btn-run:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* Grid Layout */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 24px;
+    }
+
+    /* Cards */
+    .card {
+      background: var(--bg-card);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+
+    .card-title {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* Source Manager Form */
+    .add-source-form {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    select, input[type="text"] {
+      background: rgba(10, 14, 23, 0.8);
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      outline: none;
+    }
+
+    select {
+      width: 160px;
+    }
+
+    input[type="text"] {
+      flex: 1;
+    }
+
+    input[type="text"]:focus, select:focus {
+      border-color: var(--accent-cyan);
+    }
+
+    .btn-add {
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-add:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .source-group {
+      margin-bottom: 16px;
+    }
+
+    .source-group-label {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .source-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .source-tag {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .tag-delete {
+      color: var(--text-muted);
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    .tag-delete:hover {
+      color: var(--accent-red);
+    }
+
+    /* Signal Cards */
+    .signals-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+    }
+
+    .signal-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 16px;
+      transition: transform 0.2s;
+    }
+
+    .signal-card:hover {
+      transform: translateY(-2px);
+      background: var(--bg-card-hover);
+    }
+
+    .signal-card.bullish {
+      border-left: 4px solid var(--accent-green);
+    }
+
+    .signal-card.bearish {
+      border-left: 4px solid var(--accent-red);
+    }
+
+    .signal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .ticker-symbol {
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .sentiment-badge {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 4px;
+      text-transform: uppercase;
+    }
+
+    .sentiment-badge.bullish {
+      background: rgba(0, 230, 118, 0.2);
+      color: var(--accent-green);
+    }
+
+    .sentiment-badge.bearish {
+      background: rgba(255, 82, 82, 0.2);
+      color: var(--accent-red);
+    }
+
+    .company-name {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+
+    .confidence-bar-bg {
+      background: rgba(255, 255, 255, 0.1);
+      height: 4px;
+      border-radius: 2px;
+      overflow: hidden;
+      margin-bottom: 12px;
+    }
+
+    .confidence-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent-cyan), var(--accent-green));
+    }
+
+    .themes-list {
+      font-size: 11px;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    /* Stats Sidebar */
+    .stat-box {
+      background: rgba(10, 14, 23, 0.5);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 14px;
+      margin-bottom: 12px;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    .stat-value {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--accent-cyan);
+    }
+
+    /* Spinner */
+    .spinner {
+      width: 14px;
+      height: 14px;
+      border: 2px solid rgba(4, 9, 20, 0.3);
+      border-top-color: #040914;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      display: none;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <header>
+      <div class="logo-section">
+        <div class="logo-icon">📈</div>
+        <div>
+          <h1>Stock Signal Brief</h1>
+          <p style="font-size: 12px; color: var(--text-muted);">Autonomous Multi-Agent Intelligence Dashboard</p>
+        </div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 16px;">
+        <div class="status-badge" id="statusBadge">
+          <div class="status-dot"></div>
+          <span id="statusText">Pipeline Ready</span>
+        </div>
+        <button class="btn-run" id="btnRun" onclick="runPipeline()">
+          <div class="spinner" id="runSpinner"></div>
+          <span>Run Autonomous Loop</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Grid -->
+    <div class="dashboard-grid">
+      <!-- Main Content Area -->
+      <div>
+        <!-- Source Manager Card -->
+        <div class="card">
+          <div class="card-title">
+            <span>⚙️ Source Configuration (`sources.yaml`)</span>
+            <span style="font-size: 12px; color: var(--text-muted);">Cached for Daily Execution</span>
+          </div>
+
+          <form class="add-source-form" onsubmit="addSource(event)">
+            <select id="sourceCategory">
+              <option value="youtube_sources">YouTube Link / Query</option>
+              <option value="rss_feeds">Financial RSS Feed</option>
+              <option value="news_webpages">News Webpage URL</option>
+            </select>
+            <input type="text" id="sourceInput" placeholder="Paste YouTube link, channel handle, RSS URL, or webpage..." required>
+            <button type="submit" class="btn-add">+ Add Source</button>
+          </form>
+
+          <div id="sourcesContainer">
+            <!-- Dynamically loaded -->
+          </div>
+        </div>
+
+        <!-- Latest Signals Dashboard -->
+        <div class="card">
+          <div class="card-title">
+            <span>🚀 Latest Stock Signals & Market Mood</span>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span id="engineBadge" class="source-tag" style="font-size:11px;">Ollama LLM</span>
+              <span id="moodBadge" class="sentiment-badge bullish">BULLISH</span>
+            </div>
+          </div>
+          <div class="signals-grid" id="signalsGrid">
+            <!-- Dynamically loaded -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <div>
+        <!-- Cache & Telemetry Stats -->
+        <div class="card">
+          <div class="card-title">⚡ Smart Cache & Telemetry</div>
+          
+          <div class="stat-box">
+            <div class="stat-label">Cache Hit Rate</div>
+            <div class="stat-value" id="cacheHitRate">0.0%</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">Cached Media Entries</div>
+            <div class="stat-value" id="cachedEntries">0</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">Cache TTL Window</div>
+            <div class="stat-value" id="cacheTTL">12.0 Hours</div>
+          </div>
+        </div>
+
+        <!-- Macro Market Themes -->
+        <div class="card">
+          <div class="card-title">🌐 Active Macro Themes</div>
+          <ul id="themesList" style="padding-left: 16px; font-size: 13px; color: var(--text-muted); line-height: 1.8;">
+            <li>Loading market themes...</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = "";
+
+    async function fetchSources() {
+      try {
+        const res = await fetch(`${API_BASE}/api/sources`);
+        const data = await res.json();
+        renderSources(data);
+      } catch (err) {
+        console.error("Failed to load sources:", err);
+      }
+    }
+
+    async function fetchCacheStats() {
+      try {
+        const res = await fetch(`${API_BASE}/api/cache-stats`);
+        const stats = await res.json();
+        document.getElementById("cacheHitRate").textContent = `${stats.hit_rate_percentage}%`;
+        document.getElementById("cachedEntries").textContent = stats.total_cached_entries;
+        document.getElementById("cacheTTL").textContent = `${stats.ttl_hours} Hours`;
+      } catch (err) {
+        console.error("Failed to load cache stats:", err);
+      }
+    }
+
+    async function fetchLatestReport() {
+      try {
+        const res = await fetch(`${API_BASE}/api/latest-report`);
+        if (!res.ok) return;
+        const report = await res.json();
+        renderReport(report);
+      } catch (err) {
+        console.error("Failed to load report:", err);
+      }
+    }
+
+    function renderSources(sources) {
+      const container = document.getElementById("sourcesContainer");
+      container.innerHTML = "";
+
+      const gainersGroup = document.createElement("div");
+      gainersGroup.className = "source-group";
+      const isGainersEnabled = sources.enable_yahoo_gainers !== false;
+      gainersGroup.innerHTML = `
+        <div class="source-group-label">🔥 Yahoo Finance Top Gainers Feed</div>
+        <div class="source-tags">
+          <div class="source-tag" style="background: rgba(0, 242, 254, 0.1); border-color: rgba(0, 242, 254, 0.3);">
+            <span>Top ${sources.yahoo_gainers_limit || 10} Day Gainers News Ingestion: <strong>${isGainersEnabled ? 'ENABLED' : 'DISABLED'}</strong></span>
+            <span class="tag-delete" style="color:var(--accent-cyan);" onclick="toggleGainers(${!isGainersEnabled})">[${isGainersEnabled ? 'Disable' : 'Enable'}]</span>
+          </div>
+        </div>
+      `;
+      container.appendChild(gainersGroup);
+
+      const categories = [
+        { key: "youtube_sources", label: "🎥 YouTube Video Links & Search Queries" },
+        { key: "rss_feeds", label: "📰 Financial RSS Feeds" },
+        { key: "news_webpages", label: "🌐 Custom News Webpage URLs" }
+      ];
+
+      categories.forEach(cat => {
+        const items = sources[cat.key] || [];
+        const group = document.createElement("div");
+        group.className = "source-group";
+        
+        let tagsHtml = items.map(item => `
+          <div class="source-tag">
+            <span>${item}</span>
+            <span class="tag-delete" onclick="removeSource('${cat.key}', '${encodeURIComponent(item)}')">×</span>
+          </div>
+        `).join("");
+
+        group.innerHTML = `
+          <div class="source-group-label">${cat.label} (${items.length})</div>
+          <div class="source-tags">${tagsHtml || '<span style="font-size:12px; color:var(--text-muted);">No sources added.</span>'}</div>
+        `;
+        container.appendChild(group);
+      });
+    }
+
+    async function toggleGainers(enabled) {
+      try {
+        const res = await fetch(`${API_BASE}/api/sources/toggle-gainers`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ enabled: enabled })
+        });
+        const data = await res.json();
+        if (data.sources) renderSources(data.sources);
+      } catch (err) {
+        alert("Failed to toggle Top Gainers feed");
+      }
+    }
+
+    function renderReport(report) {
+      const moodBadge = document.getElementById("moodBadge");
+      const mood = report.analysis_output?.overall_market_mood || "NEUTRAL";
+      moodBadge.textContent = mood;
+      moodBadge.className = `sentiment-badge ${mood.toLowerCase()}`;
+
+      const engineBadge = document.getElementById("engineBadge");
+      const engine = report.analysis_output?.analysis_engine || "Ollama LLM";
+      engineBadge.textContent = engine;
+      if (engine.includes("Fallback")) {
+        engineBadge.style.background = "rgba(255, 82, 82, 0.2)";
+        engineBadge.style.borderColor = "rgba(255, 82, 82, 0.4)";
+        engineBadge.style.color = "var(--accent-red)";
+      } else {
+        engineBadge.style.background = "rgba(0, 242, 254, 0.1)";
+        engineBadge.style.borderColor = "rgba(0, 242, 254, 0.3)";
+        engineBadge.style.color = "var(--accent-cyan)";
+      }
+
+      // Render Themes
+      const themesList = document.getElementById("themesList");
+      themesList.innerHTML = (report.macro_themes || []).map(t => `<li>${t}</li>`).join("");
+
+      // Render Signals
+      const signalsGrid = document.getElementById("signalsGrid");
+      signalsGrid.innerHTML = "";
+
+      const items = report.analysis_output?.items || [];
+      if (items.length === 0) {
+        signalsGrid.innerHTML = `<div style="color:var(--text-muted); font-size:13px;">No signals analyzed yet. Run the autonomous loop.</div>`;
+        return;
+      }
+
+      items.forEach(item => {
+        const card = document.createElement("div");
+        card.className = `signal-card ${item.sentiment.toLowerCase()}`;
+        const confPercent = Math.round(item.confidence_score * 100);
+        const rec = item.recommendation || "WAIT";
+        const recStyle = rec === "BUY" ? "background:rgba(0,255,163,0.15); border:1px solid #00ffa3; color:#00ffa3;" : "background:rgba(255,184,0,0.15); border:1px solid #ffb800; color:#ffb800;";
+        const newsListHtml = (item.relevant_news && item.relevant_news.length > 0)
+          ? item.relevant_news.map(n => `<li style="margin-bottom:3px; font-size:11px; color:var(--text-primary);">${n}</li>`).join("")
+          : `<li style="font-size:11px; color:var(--text-primary);">${item.source_summary}</li>`;
+        
+        card.innerHTML = `
+          <div class="signal-header">
+            <span class="ticker-symbol">${item.ticker}</span>
+            <span class="sentiment-badge ${item.sentiment.toLowerCase()}">${item.sentiment}</span>
+            <span style="font-size:11px; font-weight:700; padding:2px 8px; border-radius:12px; ${recStyle}">${rec}</span>
+          </div>
+          <div class="company-name">${item.company_name}</div>
+          <div class="confidence-bar-bg">
+            <div class="confidence-bar-fill" style="width: ${confPercent}%;"></div>
+          </div>
+          <div class="themes-list" style="margin-top:8px;">
+            <div style="font-size:11px; font-weight:600; color:var(--text-muted); margin-bottom:4px;">RELEVANT NEWS & VIDEO INSIGHTS:</div>
+            <ul style="padding-left:14px; margin:0;">
+              ${newsListHtml}
+            </ul>
+            <div style="margin-top:6px; color: var(--accent-cyan); font-size:11px; font-weight:500;">Confidence: ${confPercent}%</div>
+          </div>
+        `;
+        signalsGrid.appendChild(card);
+      });
+    }
+
+    async function addSource(event) {
+      event.preventDefault();
+      const cat = document.getElementById("sourceCategory").value;
+      const input = document.getElementById("sourceInput");
+      const val = input.value.trim();
+
+      if (!val) return;
+
+      try {
+        const res = await fetch(`${API_BASE}/api/sources/add`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ category: cat, url_or_query: val })
+        });
+        const data = await res.json();
+        if (data.sources) renderSources(data.sources);
+        input.value = "";
+      } catch (err) {
+        alert("Failed to add source");
+      }
+    }
+
+    async function removeSource(category, encodedItem) {
+      const item = decodeURIComponent(encodedItem);
+      try {
+        const res = await fetch(`${API_BASE}/api/sources/remove`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ category: category, url_or_query: item })
+        });
+        const data = await res.json();
+        if (data.sources) renderSources(data.sources);
+      } catch (err) {
+        alert("Failed to remove source");
+      }
+    }
+
+    async function runPipeline() {
+      const btn = document.getElementById("btnRun");
+      const spinner = document.getElementById("runSpinner");
+      const statusText = document.getElementById("statusText");
+
+      btn.disabled = true;
+      spinner.style.display = "block";
+      statusText.textContent = "Executing Multi-Agent Loop...";
+
+      try {
+        const res = await fetch(`${API_BASE}/api/run`, { method: "POST" });
+        const data = await res.json();
+        if (data.status === "success" && data.report) {
+          renderReport(data.report);
+          fetchCacheStats();
+          statusText.textContent = "Pipeline Completed Successfully";
+        } else {
+          alert("Pipeline run failed: " + (data.message || "Unknown error"));
+          statusText.textContent = "Pipeline Error";
+        }
+      } catch (err) {
+        alert("Error connecting to server");
+        statusText.textContent = "Connection Error";
+      } finally {
+        btn.disabled = false;
+        spinner.style.display = "none";
+      }
+    }
+
+    // Initial load
+    fetchSources();
+    fetchCacheStats();
+    fetchLatestReport();
+  </script>
+</body>
+</html>

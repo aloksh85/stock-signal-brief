@@ -1,0 +1,6 @@
+enable_yahoo_gainers: true
+yahoo_gainers_limit: 10
+rss_feeds: []
+youtube_sources:
+- https://www.youtube.com/watch?v=qAG3hxwt7Yg
+news_webpages: []
