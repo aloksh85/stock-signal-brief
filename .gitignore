@@ -1,5 +1,17 @@
-**/output/**
-**/logs/**
-**/cache/**
-**/venv/**
-**/__pycache__/**
+# Python Bytecode & Cache
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# Project Directories & Generated Artifacts
+output/
+logs/
+cache/
+venv/
+.venv/
+env/
+.env
+
+# Antigravity Brain / Temp
+.DS_Store
